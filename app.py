@@ -34,7 +34,7 @@ def makeWebhookResult(req):
     parameters = result.get("parameters")
     var1 = parameters.get("employees")
     
-    age = {'Sophie Quinn':41}
+    age = {'Sophie Quinn':41, 'Diane Russell':49}
 
     speech = "The age of " + var1 + " is " + str(age[var1])
 
