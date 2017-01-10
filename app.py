@@ -57,7 +57,7 @@ client = bigquery.Client()
 
         for row in rows:
             print("Response:")
-            print(row)
+            print(total_rows)
     
         if not page_token:
             break
@@ -69,8 +69,8 @@ if __name__ == '__main__':
 
 
     return {
-        "speech": row,
-        "displayText": row,
+        "speech": total_rows,
+        "displayText": total_rows,
         #"data": {},
         # "contextOut": [],
         "source": "apiai-miibottest"
