@@ -7,6 +7,7 @@ import os
 from flask import Flask
 from flask import request
 from flask import make_response
+from google.cloud import bigquery
 
 # Flask app should start in global layout
 app = Flask(__name__)
@@ -30,20 +31,46 @@ def webhook():
 def makeWebhookResult(req):
     if req.get("result").get("action") != "employee.age":
         return {}
-    result = req.get("result")
-    parameters = result.get("parameters")
-    var1 = parameters.get("employees")
+client = bigquery.Client()
+    # [END create_client]
+    # [START run_query]
+    query_results = client.run_sync_query("""
+        SELECT
+            APPROX_TOP_COUNT(corpus, 10) as title
+        FROM `publicdata.samples.shakespeare`;""")
+
+    # Use standard SQL syntax for queries.
+    # See: https://cloud.google.com/bigquery/sql-reference/
+    query_results.use_legacy_sql = False
+
+    query_results.run()
+    # [END run_query]
+
+    # [START print_results]
+    # Drain the query results by requesting a page at a time.
+    page_token = None
+
+    while True:
+        rows, total_rows, page_token = query_results.fetch_data(
+            max_results=10,
+            page_token=page_token)
+
+        for row in rows:
+            print("Response:")
+            print(row)
     
-    age = {'Sophie Quinn':41, 'Diane Russell':49, 'Ruth Cornish':37, 'Ella  Payne':33, 'Julia Nash':27, 'Lisa Miller':32, 'Liam Allan':59, 'Carl Baker':30,'Ava Vance':38}
+        if not page_token:
+            break
+    # [END print_results]
 
-    speech = "The age of " + var1 + " is " + str(age[var1])
 
-    print("Response:")
-    print(speech)
+if __name__ == '__main__':
+    query_shakespeare()
+
 
     return {
-        "speech": speech,
-        "displayText": speech,
+        "speech": row,
+        "displayText": row,
         #"data": {},
         # "contextOut": [],
         "source": "apiai-miibot"
